@@ -1,36 +1,29 @@
 class Api::SentencesCorrectorController < ActionController::Base
  
 	def update
-		request_params = JSON.parse request.body.read
-	  	text = request_params["text"]
 
-		splitted_text = text.split(".") #Dots are gone
+		# request_params = JSON.parse request.body
+
+		text = params["text"]
+		errors = []
 		corrections = []
-		@regex = /  +/i
+		errors << { case_type: "Should only have one space.", cases: text.scan(/\.  +/)} if text.scan(/\.  +/).length > 0
+		errors << { case_type: "Should have one space at least.", cases: text.scan(/\.\w/)} if text.scan(/\.\w/).length > 0
 
-		splitted_text.each_with_index do |sentence, index|
-			correction = check_only_one_space_after_period(sentence, index+1) #check if more than one space at begining
-			corrections.push correction if !correction.nil?
-		end		
-
-	  	render :json => {
-	  		phrase: text, 
-	  		corrected_phrase: text.gsub(@regex, " "),
-	  		corrections: corrections
-	  	}
-	end
-
-	private
+		corrected_text = text.gsub(/\.  +/, ". ").gsub(/(\.)(\w)/, '\1 \2')
 		
-		def check_only_one_space_after_period sentence, nbr
-			correction = {
-							ctype: "extra_blank_space", 
-							sentence_nbr: nbr, 
-							sentence: sentence, 
-							corrected_sentence: sentence.gsub(@regex, " ")
-						  } if !sentence.match(@regex).nil?
+		errors.each do |error|
+			error[:case_fixes] = []
+			error[:cases].each do |cse|
+				error[:case_fixes] << cse.gsub(/\.  +/, ". ").gsub(/(\.)(\w)/, '\1 \2')
+			end
 		end
 
+		render :json => {
+			text: text,
+			corrected_text: corrected_text,
+			errors: errors
+		}
+	end
 end
-
 

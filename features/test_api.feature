@@ -2,28 +2,23 @@ Feature: test api
   Scenario: correct paragraph
     When I send a GET request to "/api/sentences_corrector" with the following:
       """
-      {"text":"Hello World.  Hello.   Hello"}
+      {"text":"adolfo.beto.cacho.sbaraglia.     sbarto.        ycono.                  pepe.pepe"}
       """
       Then the response status should be "200"
       And the JSON response should be:
       """
-        {
-          "phrase": "Hello World.  Hello.   Hello",
-          "corrected_phrase":"Hello World. Hello. Hello",
-          "corrections":[
-                  {
-                    "ctype": "extra_blank_space",
-                    "sentence_nbr": 2,
-                    "sentence": "  Hello",
-                    "corrected_sentence": " Hello"},
-                  {
-                    "ctype": "extra_blank_space",
-                    "sentence_nbr":3,
-                    "sentence": "   Hello",
-                    "corrected_sentence": " Hello"
-                  }
-          ]
-        }
+        {"text":"adolfo.beto.cacho.sbaraglia.     sbarto.        ycono.                  pepe.pepe",
+          "corrected_text":"adolfo. beto. cacho. sbaraglia. sbarto. ycono. pepe. pepe",
+          "errors":
+            [
+              { "cases":[".     ",".        ",".                  "],
+                "case_type":"Should only have one space.",
+                "case_fixes":[". ",". ",". "]
+              },
+              { "cases":[".b",".c",".s",".p"],
+                "case_type":"Should have one space at least.",
+                "case_fixes":[". b",". c",". s",". p"]
+              }]}
       """
 
   Scenario: correct paragraph good text
@@ -34,10 +29,10 @@ Feature: test api
       Then the response status should be "200"
       And the JSON response should be:
       """
-        {
-          "phrase": "Hello World. Hello. Hello.",
-          "corrected_phrase":"Hello World. Hello. Hello.",
-          "corrections":[]
+         {
+          "text":"Hello World. Hello. Hello.",
+          "corrected_text":"Hello World. Hello. Hello.",
+          "errors":[]
         }
       """
   Scenario: correct paragraph really wrong text
@@ -49,20 +44,14 @@ Feature: test api
       And the JSON response should be:
       """
         {
-          "phrase": "Hello World. Hello.                Hello. Helllooooo..     dsadasdasd",
-          "corrected_phrase":"Hello World. Hello. Hello. Helllooooo.. dsadasdasd",
-          "corrections":[
-                  {
-                    "ctype": "extra_blank_space",
-                    "sentence_nbr": 3,
-                    "sentence": "                Hello",
-                    "corrected_sentence": " Hello"},
-                  {
-                    "ctype": "extra_blank_space",
-                    "sentence_nbr":6,
-                    "sentence": "     dsadasdasd",
-                    "corrected_sentence": " dsadasdasd"
-                  }
-          ]
+          "text": "Hello World. Hello.                Hello. Helllooooo..     dsadasdasd",
+          "corrected_text":"Hello World. Hello. Hello. Helllooooo.. dsadasdasd",
+          "errors":
+            [
+              { "cases":[".                ",".     "],
+                "case_type":"Should only have one space.",
+                "case_fixes":[". ",". "]
+              }
+            ]
         }
       """

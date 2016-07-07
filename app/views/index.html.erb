@@ -1,0 +1,37 @@
+<%= javascript_tag do %>
+
+function getCorrectionsRealTime(element)
+{
+	$.get("/api/sentences_corrector", {"text": element.value}, function(data)
+	{
+		if(data.errors.length == 0)
+			element.style.background = "#99FF99"
+		else if (data.errors.length == 1)
+			element.style.background = "#FF9900"
+		else
+			element.style.background = "#ff3333"
+
+		var prettyfy = JSON.stringify(data, null, 4).
+							replace(/\{/g, "<ul>").
+							replace(/\}/g, "</ul>").
+							replace(/\[/g, "<li>").
+							replace(/\]/g, "</li>").
+							replace(/\,/g, "</br>")
+
+							;
+
+		$("#validations").html(prettyfy);
+
+	});	
+}
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+};
+
+<% end %>
+
+
+<textarea placeholder="ingresar y validar" rows="4" cols="50" onkeydown="getCorrectionsRealTime(this);" ></textarea>
+<div id="validations" ></div>
